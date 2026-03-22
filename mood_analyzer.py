@@ -1,3 +1,6 @@
+import string
+import re
+
 # mood_analyzer.py
 """
 Rule based mood analyzer for short text snippets.
@@ -53,6 +56,24 @@ class MoodAnalyzer:
           - Normalize repeated characters ("soooo" -> "soo")
         """
         cleaned = text.strip().lower()
+
+        # Text emojis
+        cleaned = cleaned.replace(':)', ' happy_emoji ')
+        cleaned = cleaned.replace(':(', ' sad_emoji ')
+        cleaned = cleaned.replace(':-(', ' sad_emoji ')
+        
+        # Unicode emojis (add spaces so they become separate tokens)
+        cleaned = cleaned.replace('😂', ' laughing_emoji ')
+        cleaned = cleaned.replace('🥲', ' crying_emoji ')
+        cleaned = cleaned.replace('💀', ' skull_emoji ')
+
+        # Normalize repeated characters (3+ -> 2)
+        # Pattern: matches any character repeated 3 or more times
+        # Replacement: replaces with the character repeated twice
+        cleaned = re.sub(r'(.)\1{2,}', r'\1\1', cleaned)
+
+        #removing punctuation
+        cleaned = ''.join(char for char in cleaned if char not in string.punctuation) # removing punctuation
         tokens = cleaned.split()
 
         return tokens
@@ -62,19 +83,26 @@ class MoodAnalyzer:
     # ---------------------------------------------------------------------
 
     def score_text(self, text: str) -> int:
-        """
-        Compute a numeric "mood score" for the given text.
+      tokens = self.preprocess(text)
+      score = 0
 
-        Positive words increase the score.
-        Negative words decrease the score.
+      # Strong words and emojis get 2 point
+      strong_positive = {'love', 'amazing', 'awesome', 'happy_emoji', 'laughing_emoji'}
+      strong_negative = {'hate', 'terrible', 'awful', 'sad_emoji'}
 
-        TODO: You must choose AT LEAST ONE modeling improvement to implement.
-        For example:
-          - Handle simple negation such as "not happy" or "not bad"
-          - Count how many times each word appears instead of just presence
-          - Give some words higher weights than others (for example "hate" < "annoyed")
-          - Treat emojis or slang (":)", "lol", "💀") as strong signals
-        """
+      for token in tokens:
+        if token in strong_positive:
+          score += 2
+        elif token in self.positive_words:
+           score += 1
+
+        if token in strong_negative:
+           score -= 2
+        elif token in self.negative_words:
+           score -= 1
+
+      return score
+                
         # TODO: Implement this method.
         #   1. Call self.preprocess(text) to get tokens.
         #   2. Loop over the tokens.
@@ -83,34 +111,33 @@ class MoodAnalyzer:
         #
         # Hint: if you implement negation, you may want to look at pairs of tokens,
         # like ("not", "happy") or ("never", "fun").
-        pass
 
     # ---------------------------------------------------------------------
     # Label prediction
     # ---------------------------------------------------------------------
 
     def predict_label(self, text: str) -> str:
-        """
-        Turn the numeric score for a piece of text into a mood label.
+        score = self.score_text(text) 
+        tokens = self.preprocess(text)
 
-        The default mapping is:
-          - score > 0  -> "positive"
-          - score < 0  -> "negative"
-          - score == 0 -> "neutral"
+        # check for both positive and negative words in sentence
+        has_positive = any(t in self.positive_words for t in tokens)
+        has_negative = any(t in self.negative_words for t in tokens)
 
-        TODO: You can adjust this mapping if it makes sense for your model.
-        For example:
-          - Use different thresholds (for example score >= 2 to be "positive")
-          - Add a "mixed" label for scores close to zero
-        Just remember that whatever labels you return should match the labels
-        you use in TRUE_LABELS in dataset.py if you care about accuracy.
-        """
+        if has_positive and has_negative:
+           return "mixed"
+        elif score > 0:
+           return "positive"
+        elif score < 0:
+           return "negative"
+        else:
+           return "neutral"
+
         # TODO: Implement this method.
         #   1. Call self.score_text(text) to get the numeric score.
         #   2. Return "positive" if the score is above 0.
         #   3. Return "negative" if the score is below 0.
         #   4. Return "neutral" otherwise.
-        pass
 
     # ---------------------------------------------------------------------
     # Explanations (optional but recommended)
