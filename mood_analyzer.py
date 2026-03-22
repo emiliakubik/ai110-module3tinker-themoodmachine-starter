@@ -83,35 +83,31 @@ class MoodAnalyzer:
     # ---------------------------------------------------------------------
 
     def score_text(self, text: str) -> int:
-      tokens = self.preprocess(text)
-      score = 0
-
-      # Strong words and emojis get 2 point
-      strong_positive = {'love', 'amazing', 'awesome', 'happy_emoji', 'laughing_emoji'}
-      strong_negative = {'hate', 'terrible', 'awful', 'sad_emoji'}
-
-      for token in tokens:
-        if token in strong_positive:
-          score += 2
-        elif token in self.positive_words:
-           score += 1
-
-        if token in strong_negative:
-           score -= 2
-        elif token in self.negative_words:
-           score -= 1
-
-      return score
+        tokens = self.preprocess(text)
+        score = 0
+        
+        negation_words = {'not', 'no', 'never', 'dont', 'doesnt', 'didnt', 'wont', 'cant'}
+        strong_positive = {'love', 'amazing', 'awesome', 'happyemoji', 'laughingemoji'}
+        strong_negative = {'hate', 'terrible', 'awful', 'sademoji'}
+        
+        for i, token in enumerate(tokens):
+            # Check if previous word is negation
+            is_negated = False
+            if i > 0 and tokens[i-1] in negation_words:
+                is_negated = True
+            
+            # Score the token
+            if token in strong_positive:
+                score += -2 if is_negated else 2
+            elif token in self.positive_words:
+                score += -1 if is_negated else 1
+            elif token in strong_negative:
+                score -= -2 if is_negated else 2  # Double negative
+            elif token in self.negative_words:
+                score -= -1 if is_negated else 1  # Double negative
+        
+        return score
                 
-        # TODO: Implement this method.
-        #   1. Call self.preprocess(text) to get tokens.
-        #   2. Loop over the tokens.
-        #   3. Increase the score for positive words, decrease for negative words.
-        #   4. Return the total score.
-        #
-        # Hint: if you implement negation, you may want to look at pairs of tokens,
-        # like ("not", "happy") or ("never", "fun").
-
     # ---------------------------------------------------------------------
     # Label prediction
     # ---------------------------------------------------------------------
@@ -132,12 +128,6 @@ class MoodAnalyzer:
            return "negative"
         else:
            return "neutral"
-
-        # TODO: Implement this method.
-        #   1. Call self.score_text(text) to get the numeric score.
-        #   2. Return "positive" if the score is above 0.
-        #   3. Return "negative" if the score is below 0.
-        #   4. Return "neutral" otherwise.
 
     # ---------------------------------------------------------------------
     # Explanations (optional but recommended)
