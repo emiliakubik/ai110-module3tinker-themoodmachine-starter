@@ -1,3 +1,7 @@
+# Final Reflection
+
+Students need to understand the difference between these models. Students may struggle on understanding what a ML model is and how it actually works, because unless it will be explained in the lecture, I don't believe it ever really introduces that model and so students unfamiliar with it may be confused. AI was helpful in the brainstorming process and getting ideas flowing. However, when I was implementing the 3 functions it wrote excessive code and repeated each part in all 3 functions, so I had to be there telling it to clean it up and simplify it. One way I would guide the student without giving an answer would be introducing the functions in a real life example, such as asking them: if I told them "I am happy" how would you figure out my mood just using that? And get them conversing about it verbally and in real life terms to truly understand it before they even turn to the code. 
+
 # The Mood Machine
 
 The Mood Machine is a simple text classifier that begins with a rule based approach and can optionally be extended with a small machine learning model. It tries to guess whether a short piece of text sounds **positive**, **negative**, **neutral**, or even **mixed** based on patterns in your data.
